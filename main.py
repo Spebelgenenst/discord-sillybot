@@ -11,7 +11,7 @@ with open("credentials.json", "r") as f:
 with open("config.json", "r") as f:
     config = json.load(f)
 
-print(config["gifs"].keys())
+#print(config["gifs"].keys())
 
 intents = discord.Intents.default()
 #intents.members = True
