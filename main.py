@@ -17,7 +17,8 @@ with open("config.json", "r") as f:
     config = json.load(f)
 
 intents = discord.Intents.default()
-#intents.members = True
+intents.members = True
+intents.messages = True
 client = discord.Client(intents=intents, heartbeat_timeout=180)
 tree = app_commands.CommandTree(client)
 
@@ -44,15 +45,13 @@ async def on_ready():
 
 @tree.command(name="send_message", description="let a person send a message")
 async def send_message(interaction: discord.Interaction, user: discord.Member, message: str):
-
     await interaction.response.defer(ephemeral=True)
-    response = await interaction.original_response() 
+    loading_message = await interaction.original_response() 
 
-    webhook = await interaction.channel.create_webhook(name="test")
+    webhook = await interaction.channel.create_webhook(name=user.name)
     await webhook.send(content=message, username=user.display_name, avatar_url=user.avatar)
 
-    await response.delete()
-
+    await loading_message.delete()
     await webhook.delete()
 
 @tree.command(name="random_gif", description="get a random gif of something")
@@ -61,6 +60,31 @@ async def get_gif(interaction: discord.Interaction, pic_type: Literal[*list(conf
         pic_type = random.choice(list(config["gifs"].keys()))
     gif = random.choice(config["gifs"][pic_type])
     await interaction.response.send_message(gif)
+
+@tree.command(name="predict", description="predict what message a user will send")
+async def predict_message(interaction: discord.Interaction, user: discord.Member, last_messages: int = 6):
+    await interaction.response.defer(ephemeral=True)
+    loading_message = await interaction.original_response() 
+    messages = []
+
+    async for message in interaction.channel.history(limit=last_messages):
+        messages.append(f"{message.author.display_name}: {message.content}")
+
+    messages.reverse()
+    prompt = f"one possible next message {user.display_name} will send. previous messages: {messages}"
+
+    raw_response = await ai(prompt)
+    #print(raw_response)
+
+    try:
+        response = raw_response.split('"')[1]
+    except IndexError:
+        response = raw_response
+
+    webhook = await interaction.channel.create_webhook(name=user.name)
+    await webhook.send(content=response, username=user.display_name, avatar_url=user.avatar)
+    await loading_message.delete()
+    await webhook.delete()
 
 @client.event
 async def on_message(message):
