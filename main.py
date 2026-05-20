@@ -28,14 +28,14 @@ async def ai(prompt):
     message = [
         {"role": "user", "content": prompt},
     ]
-    prompt = pipe.tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True)   
-    outputs = await asyncio.to_thread(pipe, prompt, max_new_tokens=256, do_sample=True, temperature=0.7, top_k=50, top_p=0.95)
+    ai_prompt = pipe.tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True)   
+    outputs = await asyncio.to_thread(pipe, ai_prompt, max_new_tokens=256, do_sample=True, temperature=0.7, top_k=50, top_p=0.95)
 
     raw_text = outputs[0]["generated_text"]
 
     print(raw_text)
 
-    clean_text = raw_text.split("<|assistant|>")[1]
+    clean_text = raw_text.split("<|assistant|>")[1].replace(prompt, "").strip()
 
     return clean_text
 
@@ -90,7 +90,9 @@ async def predict_message(interaction: discord.Interaction, user: discord.Member
 @client.event
 async def on_message(message):
     if client.user.mentioned_in(message) and message.author != client.user:
+        await message.add_reaction("⌛")
         response = await ai(message.content.replace(f"<@{client.user.id}>", "ai"))
         await message.reply(response)
+        await message.remove_reaction("⌛", client.user)
 
 client.run(credentials["discordBotToken"])
