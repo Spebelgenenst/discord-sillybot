@@ -13,6 +13,9 @@ predict what will be the next message by a user
 
 - ping the bot to get an ai generated answer
 
+## system requirements
+- 2-3 gb of ram
+
 ## install
 
 create a virtual enviorment
