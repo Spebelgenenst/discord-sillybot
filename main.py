@@ -19,7 +19,7 @@ with open("config.json", "r") as f:
 intents = discord.Intents.default()
 intents.members = True
 intents.messages = True
-client = discord.Client(intents=intents, heartbeat_timeout=180)
+client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 pipe = pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.bfloat16, device_map="auto")
@@ -33,8 +33,9 @@ async def ai(prompt):
 
     raw_text = outputs[0]["generated_text"]
 
-    clean_text = raw_text.replace(prompt, "").strip()
-    clean_text = clean_text.replace("<|user|>", "").replace("<|assistant|>", "").strip()
+    print(raw_text)
+
+    clean_text = raw_text.split("<|assistant|>")[1]
 
     return clean_text
 
