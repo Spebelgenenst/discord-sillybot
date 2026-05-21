@@ -5,8 +5,8 @@ from petpetgif import petpet
 from typing import Literal
 import random
 
-#import torch
-#from transformers import pipeline
+import torch
+from transformers import pipeline
 
 import asyncio
 
@@ -24,7 +24,7 @@ intents.messages = True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
-#pipe = pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.bfloat16, device_map="auto")
+pipe = pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.bfloat16, device_map="auto")
 
 async def ai(prompt):
     message = [
@@ -104,6 +104,8 @@ async def petepet_user(interaction: discord.Interaction, user: discord.Member):
     avatar = await user.avatar.read()
     pet_pet_gif = pet_pet(avatar)
     await interaction.response.send_message(file=discord.File(pet_pet_gif, filename=f"{user.name}_petpet.gif"))
+
+@tree.command()
 
 @client.event
 async def on_message(message):
