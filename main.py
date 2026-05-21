@@ -89,10 +89,12 @@ async def predict_message(interaction: discord.Interaction, user: discord.Member
 
 @client.event
 async def on_message(message):
-    if client.user.mentioned_in(message) and message.author != client.user:
-        await message.add_reaction("⌛")
-        response = await ai(message.content.replace(f"<@{client.user.id}>", "ai"))
-        await message.reply(response)
-        await message.remove_reaction("⌛", client.user)
+    if not (client.user.mentioned_in(message) and message.author != client.user):
+        return
+
+    await message.add_reaction("⌛")
+    response = await ai(message.content.replace(f"<@{client.user.id}>", "ai"))
+    await message.reply(response)
+    await message.remove_reaction("⌛", client.user)
 
 client.run(credentials["discordBotToken"])
